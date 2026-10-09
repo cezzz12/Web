@@ -1,0 +1,9 @@
+{
+  "name": "vacation-destinations-node-lab9",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js lab solution for the vacation destinations assignment.",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

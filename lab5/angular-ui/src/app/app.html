@@ -1,0 +1,179 @@
+<main class="shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Travel planner</p>
+      <h1>Vacation destinations</h1>
+      <p class="intro">Save places, costs, and tourist targets in one simple list.</p>
+      <p class="backend-label">Backend: {{ backendBaseUrl }}</p>
+    </div>
+    <div class="topbar-side">
+      <div class="stats">
+        <span>{{ pagination.total }} destinations</span>
+        <span>{{ totalCountries }} countries</span>
+      </div>
+      @if (authEnabled) {
+        <div class="auth-tools">
+          <span>Signed in as {{ username }}</span>
+          <button class="ghost" type="button" (click)="logout()">Logout</button>
+        </div>
+      }
+    </div>
+  </header>
+
+  @if (message) {
+    <div class="notice success">{{ message }}</div>
+  }
+
+  @if (error) {
+    <div class="notice error">{{ error }}</div>
+  }
+
+  @if (initializing) {
+    <p class="empty">Checking authentication and loading the app...</p>
+  } @else {
+    <section class="layout">
+      <form class="panel form-panel" (ngSubmit)="saveDestination()" #destinationForm="ngForm">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">{{ isEditing ? 'Update' : 'New place' }}</p>
+            <h2>{{ isEditing ? 'Edit destination' : 'Add destination' }}</h2>
+          </div>
+          @if (isEditing) {
+            <button class="ghost" type="button" (click)="cancelEdit()">Cancel</button>
+          }
+        </div>
+
+        <label>
+          Location
+          <input
+            name="location_name"
+            [(ngModel)]="form.location_name"
+            maxlength="120"
+            required
+            placeholder="Brasov"
+          />
+          @if (fieldErrors.location_name) {
+            <small>{{ fieldErrors.location_name }}</small>
+          }
+        </label>
+
+        <label>
+          Country
+          <input
+            name="country_name"
+            [(ngModel)]="form.country_name"
+            maxlength="100"
+            required
+            placeholder="Romania"
+          />
+          @if (fieldErrors.country_name) {
+            <small>{{ fieldErrors.country_name }}</small>
+          }
+        </label>
+
+        <label>
+          Cost per day
+          <input
+            name="estimated_cost_per_day"
+            [(ngModel)]="form.estimated_cost_per_day"
+            type="number"
+            min="1"
+            step="0.01"
+            required
+            placeholder="75"
+          />
+          @if (fieldErrors.estimated_cost_per_day) {
+            <small>{{ fieldErrors.estimated_cost_per_day }}</small>
+          }
+        </label>
+
+        <label>
+          Tourist targets
+          <textarea
+            name="tourist_targets"
+            [(ngModel)]="form.tourist_targets"
+            rows="3"
+            required
+            placeholder="Old Town, mountain view, museums"
+          ></textarea>
+          @if (fieldErrors.tourist_targets) {
+            <small>{{ fieldErrors.tourist_targets }}</small>
+          }
+        </label>
+
+        <label>
+          Description
+          <textarea
+            name="description"
+            [(ngModel)]="form.description"
+            rows="4"
+            required
+            placeholder="Why this place is worth visiting"
+          ></textarea>
+          @if (fieldErrors.description) {
+            <small>{{ fieldErrors.description }}</small>
+          }
+        </label>
+
+        <button class="primary" type="submit" [disabled]="saving">
+          {{ saving ? 'Saving...' : isEditing ? 'Save changes' : 'Add destination' }}
+        </button>
+      </form>
+
+      <section class="panel list-panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Browse</p>
+            <h2>{{ selectedCountry || 'All countries' }}</h2>
+          </div>
+        </div>
+
+        <div class="filters">
+          <button type="button" [class.active]="selectedCountry === ''" (click)="selectCountry('')">
+            All
+          </button>
+          @for (country of countries; track country.country_name) {
+            <button
+              type="button"
+              [class.active]="selectedCountry === country.country_name"
+              (click)="selectCountry(country.country_name)"
+            >
+              {{ country.country_name }}
+              <strong>{{ country.destination_count }}</strong>
+            </button>
+          }
+        </div>
+
+        <div class="pager">
+          <button type="button" (click)="previousPage()" [disabled]="!pagination.has_previous">Previous</button>
+          <span>Page {{ pagination.page }} of {{ pagination.total_pages }}</span>
+          <button type="button" (click)="nextPage()" [disabled]="!pagination.has_next">Next</button>
+        </div>
+
+        @if (loading) {
+          <p class="empty">Loading destinations...</p>
+        } @else if (destinations.length === 0) {
+          <p class="empty">No destinations found.</p>
+        } @else {
+          <div class="cards">
+            @for (destination of destinations; track destination.id) {
+              <article class="card">
+                <div class="card-top">
+                  <span>{{ destination.country_name }}</span>
+                  <strong>{{ destination.estimated_cost_per_day }} / day</strong>
+                </div>
+                <h3>{{ destination.location_name }}</h3>
+                <p>{{ destination.description }}</p>
+                <p class="targets">{{ destination.tourist_targets }}</p>
+                <div class="actions">
+                  <button type="button" (click)="startEdit(destination)">Edit</button>
+                  <button class="danger" type="button" (click)="deleteDestination(destination)">Delete</button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </section>
+  }
+</main>
